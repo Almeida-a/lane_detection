@@ -18,6 +18,11 @@ def method1(crop: bool = False):
     As in https://towardsdatascience.com/line-detection-make-an-autonomous-car-see-road-lines-e3ed984952c
     Status: incoherent code, video code not sampled
     :return: Opens resulting image of method 1
+
+    Reading images
+    Grey Scale
+    Gaussian Blur
+    Canny Edge Detection
     """
 
     # Reading images
