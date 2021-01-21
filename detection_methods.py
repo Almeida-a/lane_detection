@@ -10,6 +10,12 @@ import math
 
 
 def draw_lines(line_img, lines):
+    """
+    Used by website but code was not shown
+    :param line_img:
+    :param lines:
+    :return:
+    """
     pass
 
 
