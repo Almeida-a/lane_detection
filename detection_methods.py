@@ -9,14 +9,21 @@ import numpy as np
 import math
 
 
-def show_image(img_path, title = "Display window"):
+def show_image(img_path: str = str(), image=None, title="Display window"):
     """
 
+    :param title:
+    :param image:
     :param img_path: Image's absolute path: /.../image.png
     :return: Window showing the requested image. Press any key to close it
     """
 
-    img = cv2.imread(filename=img_path)
+    if image is not None:
+        img = image
+    elif img_path != str():
+        img = cv2.imread(filename=img_path)
+    else:
+        raise AssertionError("No image provided!")
 
     # Create a visualization window
     # CV_WINDOW_AUTOSIZE : window size will depend on image size
@@ -176,7 +183,7 @@ def method3(img_path):
     # Masking region of interest
     height = lane_image.shape[0]
     triangle = np.array([[(200, height), (550, 250), (1100, height), ]], np.int32)
-    mask = np.zeros_like(lane_image)
+    mask = np.zeros_like(gray)
     cv2.fillPoly(mask, triangle, 255)
     cropped_image = cv2.bitwise_and(canny_image, mask)
 
@@ -193,11 +200,10 @@ def method3(img_path):
             cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 10)
     else:
         raise AssertionError("lines == None")
-    # cv2.imshow('Lane Lines', line_image)
     combo_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
-    cv2.imshow("Image", combo_image)
+    show_image(image=combo_image)
 
 
 if __name__ == '__main__':
     # method3('../images/img4.jpeg')
-    method3(img_path="road_photos/road2.jpeg")
+    method3(img_path="road_photos/road1.jpeg")
