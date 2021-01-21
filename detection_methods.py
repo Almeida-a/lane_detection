@@ -9,6 +9,29 @@ import numpy as np
 import math
 
 
+def show_image(img_path, title = "Display window"):
+    """
+
+    :param img_path: Image's absolute path: /.../image.png
+    :return: Window showing the requested image. Press any key to close it
+    """
+
+    img = cv2.imread(filename=img_path)
+
+    # Create a visualization window
+    # CV_WINDOW_AUTOSIZE : window size will depend on image size
+    cv2.namedWindow(title, cv2.WINDOW_AUTOSIZE)
+
+    # Show the image
+    cv2.imshow(title, img)
+
+    # Wait
+    cv2.waitKey(0)
+
+    # Destroy the window -- might be omitted
+    cv2.destroyWindow(title)
+
+
 def draw_lines(line_img, lines):
     """
     Used by website but code was not shown
@@ -129,7 +152,6 @@ def method2():
 
     plt.figure()
     plt.imshow(image)
-    # plt.imshow(image)
     # plt.show()
 
 
@@ -150,7 +172,6 @@ def method3(img_path):
 
     # Edge detection (canny)
     canny_image = cv2.Canny(blur, 50, 150)
-    # ...plt.imshow(canny_image)
 
     # Masking region of interest
     height = lane_image.shape[0]
@@ -179,4 +200,4 @@ def method3(img_path):
 
 if __name__ == '__main__':
     # method3('../images/img4.jpeg')
-    method3(img_path="../../../Desktop/road2.jpeg")
+    method3(img_path="road_photos/road2.jpeg")
