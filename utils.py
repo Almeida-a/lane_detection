@@ -36,9 +36,6 @@ def show_image(img_path: str = str(), image=None, title="Display window"):
     # Show the image
     cv2.imshow(title, img)
 
-    # Slider
-    # cv2.createTrackbar('slider', title, 3, 7, on_change)
-
     # Wait
     cv2.waitKey(0)
 

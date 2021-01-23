@@ -2,23 +2,73 @@ import cv2
 import numpy as np
 import utils
 
+
 # References
 # https://www.learnpython.org/en/Multiple_Function_Arguments
+# https://medium.com/@yogeshojha/self-driving-cars-beginners-guide-to-computer-vision-finding-simple-lane-lines-using-python-a4977015e232
+
+
+def masking(image, polygon):
+    """
+
+    :param image: Must be greyscaled
+    :param polygon: list of points
+    :return: masked image
+    """
+    # Masking region of interest
+    height, width = image.shape[0:2]
+    for i, point in enumerate(polygon):
+        # 1 - y because image matrix is processed from top to down
+        polygon[i] = point[0] * width, (1 - point[1]) * height
+
+    polygon = np.array(polygon, np.int32)
+    mask = np.zeros_like(image)
+    cv2.fillPoly(mask, [polygon], 255)
+    cropped_image = cv2.bitwise_and(image, mask)
+
+    return cropped_image
+
+
+def houghP(original_img, cropped_img):
+    # Hough's transform
+    rho = 2
+    theta = np.pi / 180
+    threshold = 100  # Minimum votes to be recognized as a line
+    lines = cv2.HoughLinesP(cropped_img, rho, theta, threshold, np.array([]), minLineLength=40, maxLineGap=5)
+
+    # Mid code: TODO calculate slopes
+    slopes = []
+    av_slope = int()
+
+    line_image = np.zeros_like(original_img)
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line.reshape(4)
+            cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 10)
+    else:
+        raise AssertionError("lines == None")
+    return cv2.addWeighted(original_img, 0.8, line_image, 1, 1), av_slope
 
 
 def lane_detector(img_path, **parameters):
     """
-    As in https://medium.com/@yogeshojha/self-driving-cars-beginners-guide-to-computer-vision-finding-simple-lane-lines-using-python-a4977015e232
     Status: working, but needs better masking
     :return: Image with lines drawn over lane separators
 
     :keyword Arguments:
         * *blur_level* (``int``) --
             level of blurring: 3, 5 or 7 TODO confirm this
+        * *blur_funct* (``funct``) --
+            choose from available opencv blur functions
         * *thresholds* (``tuple``) --
             format (threshold1, threshold2)
             TODO explain
-        * ...
+        * *triangle* (``array``)
+            format [point1, point2, point3]
+            Since in most cases the roads shape like a triangle,
+                our mask will be this triangle,
+                defined by fraction values.
+                E.g.: (.5, .5) means the point at the center of the image
         ...
     """
     # ---- Parameters: get in kwargs if it's there, if not set as default ----
@@ -31,15 +81,24 @@ def lane_detector(img_path, **parameters):
         blur_level = parameters['blur_level']
     blur = (blur_level, blur_level)
 
+    if "blur_funct" not in parameters.keys():
+        blur_funct = cv2.GaussianBlur
+    else:
+        blur_funct = parameters['blur_funct']
+
     # Canny edge detection
     thresholds = (50, 150)  # Default value TODO evaluate this
     if "thresholds" in parameters:
         assert all([0 <= elem < 256 for elem in parameters['thresholds']]),\
             "Invalid threshold values!"
-        thresholds = parameters['parameters']
+        thresholds = parameters['thresholds']
 
     # Masking
-    ...
+    triangle = [(0, .2), (.5, .99), (.99, .2), ]
+    if "triangle" in parameters:
+        assert len(triangle) == 3 and\
+               all([len(tupl) == 2 for tupl in triangle]), "Bad Shape"
+        triangle = parameters["triangle"]
 
     # ---- Pipeline stages of image processing ----
     # Loading the image
@@ -49,7 +108,7 @@ def lane_detector(img_path, **parameters):
     gray = cv2.cvtColor(lane_image, cv2.COLOR_RGB2GRAY)
 
     # Reduce Noise and Smoothen Image
-    blur = cv2.GaussianBlur(
+    blur = blur_funct(
         src=gray, ksize=blur, sigmaX=0
     )
 
@@ -58,30 +117,12 @@ def lane_detector(img_path, **parameters):
         image=blur, threshold1=thresholds[0], threshold2=thresholds[1]
     )
 
-    # Masking region of interest
-    height, width = lane_image.shape[0:2]
-    triangle = np.array(
-        [[(200, height), (550, 250), (1100, height), ]],
-        np.int32
-    )
-    mask = np.zeros_like(gray)
-    cv2.fillPoly(mask, triangle, 255)
-    cropped_image = cv2.bitwise_and(canny_image, mask)
+    # Mask region of interest
+    cropped_image = masking(canny_image, triangle)
 
-    # Hough's transform
-    rho = 2
-    theta = np.pi / 180
-    threshold = 100
-    lines = cv2.HoughLinesP(cropped_image, rho, theta, threshold, np.array([]), minLineLength=40, maxLineGap=5)
-
-    line_image = np.zeros_like(lane_image)
-    if lines is not None:
-        for line in lines:
-            x1, y1, x2, y2 = line.reshape(4)
-            cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 10)
-    else:
-        raise AssertionError("lines == None")
-    combo_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
+    # Hough Transform
+    combo_image, slope = houghP(original_img=lane_image, cropped_img=cropped_image)
+    print(f"Slope: {slope}")
     utils.show_image(image=combo_image, title=img_path.split('/')[-1])
 
 
@@ -90,4 +131,9 @@ if __name__ == '__main__':
     im_path = "road_photos/road2.jpeg"
     title = im_path.split("/")[-1]
 
-    lane_detector(im_path)
+    lane_detector(im_path,
+                  blur_level=5,
+                  blur_funct=cv2.GaussianBlur,
+                  thresholds=(50, 150),
+                  triangle=[(0, 0), (.5, .66), (.99, 0)]
+                  )
