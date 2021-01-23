@@ -1,13 +1,16 @@
 import os
+import cv2
+
+# References
+# https://techtutorialsx.com/2020/12/13/python-opencv-add-slider-to-window/
 
 
 def get_abs_path(rel_path):
-    """
-
-    :param rel_path:
-    :return:
-    """
     return os.path.realpath(rel_path)
+
+
+def on_change(value):
+    print(value)
 
 
 def show_image(img_path: str = str(), image=None, title="Display window"):
@@ -32,6 +35,9 @@ def show_image(img_path: str = str(), image=None, title="Display window"):
 
     # Show the image
     cv2.imshow(title, img)
+
+    # Slider
+    # cv2.createTrackbar('slider', title, 3, 7, on_change)
 
     # Wait
     cv2.waitKey(0)
