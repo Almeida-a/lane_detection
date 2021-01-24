@@ -29,7 +29,7 @@ def masking(image, polygon):
     return cropped_image
 
 
-def houghP(original_img, cropped_img):
+def hough_p(original_img, cropped_img):
     # Hough's transform
     rho = 2
     theta = np.pi / 180
@@ -66,14 +66,14 @@ def lane_detector(img_path, **parameters) -> np.ndarray:
         * *blur_level* (``int``) --
             level of blurring:
                 Depends on blur_funct followingly described:
-                    - if it's average blur function, any int works TODO check
+                    - if it's average blur function, any int works
                     - if it's median blur function, any odd int above 1 works
                     - else if it's gaussian blur function, any positive odd int is acceptable
         * *blur_funct* (``funct``) --
             choose from available opencv blur functions
         * *thresholds* (``tuple``) --
             format (threshold1, threshold2)
-            TODO explain
+            arguments explained in cv2::Canny
         * *polygon* (``array``)
             format [point1, point2, point3]
             Since in most cases the roads shape like a triangle,
@@ -98,7 +98,7 @@ def lane_detector(img_path, **parameters) -> np.ndarray:
         blur_funct = parameters['blur_funct']
 
     # Canny edge detection
-    thresholds = (50, 150)  # Default value TODO evaluate this
+    thresholds = (50, 150)  # Default value
     if "thresholds" in parameters:
         assert all([0 <= elem < 256 for elem in parameters['thresholds']]),\
             "Invalid threshold values!"
@@ -136,7 +136,7 @@ def lane_detector(img_path, **parameters) -> np.ndarray:
     cropped_image = masking(canny_image, polygon)
 
     # Hough Transform
-    combo_image, slope = houghP(original_img=lane_image, cropped_img=cropped_image)
+    combo_image, slope = hough_p(original_img=lane_image, cropped_img=cropped_image)
 
     # Direction values
     angle_rad = np.arctan(slope)
