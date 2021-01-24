@@ -36,17 +36,24 @@ def houghP(original_img, cropped_img):
     threshold = 100  # Minimum votes to be recognized as a line
     lines = cv2.HoughLinesP(cropped_img, rho, theta, threshold, np.array([]), minLineLength=40, maxLineGap=5)
 
-    # Mid code: TODO calculate slopes
+    # Mid code:
     slopes = []
-    av_slope = int()
 
     line_image = np.zeros_like(original_img)
     if lines is not None:
         for line in lines:
             x1, y1, x2, y2 = line.reshape(4)
             cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 10)
+            if x2 != x1:
+                slopes.append((y2-y1) / (x2-x1))
+            else:
+                # Big number
+                slopes.append(100_000)
     else:
         raise AssertionError("lines == None")
+
+    av_slope = np.average(slopes)
+
     return cv2.addWeighted(original_img, 0.8, line_image, 1, 1), av_slope
 
 
@@ -122,7 +129,12 @@ def lane_detector(img_path, **parameters):
 
     # Hough Transform
     combo_image, slope = houghP(original_img=lane_image, cropped_img=cropped_image)
-    print(f"Slope: {slope}")
+
+    # Direction values
+    angle_rad = np.arctan(slope)
+    angle_deg = np.degrees(angle_rad)
+    print(f"Slope: {slope}", f"Angle (rad): {round(angle_rad, 2)}*pi",
+          f"Angle (degrees) {round(float(angle_deg), 2)}º", sep="\n", end=".")
     utils.show_image(image=combo_image, title=img_path.split('/')[-1])
 
 
