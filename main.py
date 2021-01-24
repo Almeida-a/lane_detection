@@ -141,7 +141,7 @@ def lane_detector(img_path, **parameters) -> np.ndarray:
     # Direction values
     angle_rad = np.arctan(slope)
     angle_deg = np.degrees(angle_rad)
-    print(f"Slope: {slope}", f"Angle (rad): {round(angle_rad, 2)}*pi",
+    print(f"Slope: {slope}", f"Angle (rad): {round(np.pi/2 - angle_rad, 2)}*pi",
           f"Angle (degrees) {round(90.0 - float(angle_deg), 2)}º", sep="\n", end=".")
     utils.show_image(image=combo_image, title=img_path.split('/')[-1])
 
