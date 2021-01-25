@@ -19,7 +19,7 @@ def masking(image, polygon):
     height, width = image.shape[0:2]
     for i, point in enumerate(polygon):
         # 1 - y because image matrix is processed from top to down
-        polygon[i] = point[0] * width, (1 - point[1]) * height
+        polygon[i] = point[0] * (width - 1), (1 - point[1]) * (height - 1)
 
     polygon = np.array(polygon, np.int32)
     mask = np.zeros_like(image)
@@ -156,5 +156,5 @@ if __name__ == '__main__':
                   blur_level=7,
                   blur_funct=cv2.GaussianBlur,
                   thresholds=(50, 150),
-                  polygon=[(0, .1), (.5, .55), (.99, .1)]
+                  polygon=[(0, .1), (.5, .55), (1.0, .1)]
                   )
